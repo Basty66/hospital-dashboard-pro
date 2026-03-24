@@ -1,0 +1,137 @@
+{
+  "niveles": [
+    {
+      "codigo": 0,
+      "nombre": "Total Establecimiento",
+      "nivel_cuidado": { "tipo": "Global", "color": "primary" },
+
+      "indicadores": {
+        "dias_cama_disponibles": 50727,
+        "dias_cama_ocupados": 43325,
+        "dias_estada": 41056,
+        "indice_ocupacional": 85.4,
+        "indice_rotacion": 5.4
+      },
+
+      "resumen": {
+        "letalidad": 2.5,
+        "egresos_total": 7531,
+        "promedio_camas": 139,
+        "promedio_estada": 5.5,
+        "traslados": 660
+      },
+
+      "egresos": [
+        { "mes": "2025-01", "altas": 518, "traslados": 66, "fallecidos": 16 },
+        { "mes": "2025-02", "altas": 507, "traslados": 57, "fallecidos": 9 },
+        { "mes": "2025-03", "altas": 589, "traslados": 60, "fallecidos": 20 },
+        { "mes": "2025-04", "altas": 553, "traslados": 61, "fallecidos": 18 },
+        { "mes": "2025-05", "altas": 541, "traslados": 66, "fallecidos": 21 }
+      ]
+    },
+
+    {
+      "codigo": 405,
+      "nombre": "UCI Adulto",
+      "nivel_cuidado": { "tipo": "Crítico", "color": "red" },
+
+      "indicadores": {
+        "dias_cama_disponibles": 1961,
+        "dias_cama_ocupados": 1306,
+        "dias_estada": 656,
+        "indice_ocupacional": 66.6,
+        "indice_rotacion": 14.9
+      },
+
+      "resumen": {
+        "letalidad": 65,
+        "egresos_total": 80,
+        "promedio_camas": 5.4,
+        "promedio_estada": 8.2,
+        "traslados": 127
+      },
+
+      "egresos": [
+        { "mes": "2025-01", "altas": 1, "traslados": 14, "fallecidos": 2 },
+        { "mes": "2025-02", "altas": 2, "traslados": 10, "fallecidos": 3 },
+        { "mes": "2025-03", "altas": 5, "traslados": 11, "fallecidos": 6 },
+        { "mes": "2025-04", "altas": 2, "traslados": 6, "fallecidos": 2 },
+        { "mes": "2025-05", "altas": 4, "traslados": 12, "fallecidos": 7 }
+      ]
+    },
+
+    {
+      "codigo": 406,
+      "nombre": "UTI Adulto",
+      "nivel_cuidado": { "tipo": "Intermedio", "color": "orange" },
+
+      "indicadores": {
+        "dias_cama_disponibles": 4608,
+        "dias_cama_ocupados": 4399,
+        "dias_estada": 2701,
+        "indice_ocupacional": 95.5,
+        "indice_rotacion": 30.9
+      },
+
+      "resumen": {
+        "letalidad": 8.95,
+        "egresos_total": 391,
+        "promedio_camas": 12.6,
+        "promedio_estada": 6.9,
+        "traslados": 468
+      },
+
+      "egresos": [
+        { "mes": "2025-01", "altas": 47, "traslados": 35, "fallecidos": 2 },
+        { "mes": "2025-02", "altas": 33, "traslados": 36, "fallecidos": 2 },
+        { "mes": "2025-03", "altas": 37, "traslados": 30, "fallecidos": 5 },
+        { "mes": "2025-04", "altas": 33, "traslados": 42, "fallecidos": 4 },
+        { "mes": "2025-05", "altas": 24, "traslados": 43, "fallecidos": 4 }
+      ]
+    },
+
+    {
+      "codigo": 416,
+      "nombre": "Obstetricia",
+      "nivel_cuidado": { "tipo": "Básico", "color": "green" },
+
+      "indicadores": {
+        "dias_cama_disponibles": 6535,
+        "dias_cama_ocupados": 4320,
+        "dias_estada": 4352,
+        "indice_ocupacional": 66.1,
+        "indice_rotacion": 84.1
+      },
+
+      "resumen": {
+        "letalidad": 0,
+        "egresos_total": 1507,
+        "promedio_camas": 17.9,
+        "promedio_estada": 2.9,
+        "traslados": 7
+      },
+
+      "egresos": [
+        { "mes": "2025-01", "altas": 107, "traslados": 0, "fallecidos": 0 },
+        { "mes": "2025-02", "altas": 111, "traslados": 1, "fallecidos": 0 },
+        { "mes": "2025-03", "altas": 142, "traslados": 0, "fallecidos": 0 },
+        { "mes": "2025-04", "altas": 122, "traslados": 1, "fallecidos": 0 },
+        { "mes": "2025-05", "altas": 111, "traslados": 0, "fallecidos": 0 }
+      ]
+    }
+  ],
+
+  "glosas_base": [
+    { "titulo": "Días Cama Disponibles", "descripcion": "Cantidad total de días cama disponibles en el periodo." },
+    { "titulo": "Días Cama Ocupados", "descripcion": "Cantidad total de días cama efectivamente ocupados." },
+    { "titulo": "Días de Estada", "descripcion": "Promedio de días que un paciente permanece hospitalizado." },
+    { "titulo": "Egresos Fallecidos", "descripcion": "Número de pacientes egresados por fallecimiento." },
+    { "titulo": "Índice de Rotación", "descripcion": "Cantidad de pacientes atendidos por cama en un periodo." },
+    { "titulo": "Índice Ocupacional", "descripcion": "Porcentaje de camas ocupadas respecto al total disponible." },
+    { "titulo": "Letalidad", "descripcion": "Proporción de pacientes fallecidos respecto al total de egresos." },
+    { "titulo": "Número de Egresos", "descripcion": "Cantidad total de pacientes que egresan del establecimiento." },
+    { "titulo": "Promedio Cama Disponibles", "descripcion": "Promedio de camas disponibles en el periodo." },
+    { "titulo": "Promedio Días de Estada", "descripcion": "Promedio de días de hospitalización por paciente." },
+    { "titulo": "Traslados", "descripcion": "Cantidad de pacientes trasladados a otros servicios." }
+  ]
+}
