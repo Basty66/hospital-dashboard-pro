@@ -3,230 +3,149 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Dashboard REM Hospital San José" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>REM | Hospital San José</title>
 
-  <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/dashboard.css" />
-  <link rel="stylesheet" href="css/rem.css" />
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/global.css"/>
+  <link rel="stylesheet" href="css/dashboard.css"/>
+  <link rel="stylesheet" href="css/rem.css"/>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <!-- FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- CHART -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="app">
 
-  <div id="loader" class="loader">
-    <div class="spinner"></div>
-  </div>
+<div class="layout">
 
-  <script src="js/auth.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof initProtectedPage === "function") {
-        initProtectedPage();
-      }
-    });
-  </script>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">🏥 Hospital SJ</div>
 
-  <div class="layout">
+    <ul class="menu">
+      <li onclick="location.href='dashboard.html'">Dashboard</li>
+      <li class="active">REM</li>
+      <li onclick="location.href='camas.html'">Camas</li>
+      <li onclick="location.href='indicadores.html'">Indicadores</li>
+      <li onclick="location.href='configuracion.html'">Configuración</li>
+      <li onclick="logout()">Salir</li>
+    </ul>
+  </aside>
 
-    <aside class="sidebar">
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HEADER -->
+    <header class="topbar">
+
       <div>
-        <div class="logo">🏥 Hospital SJ</div>
+        <h1 class="rem-title">Gestión REM - Nivel de Cuidado</h1>
 
-        <ul class="menu" id="menu">
-          <li data-page="dashboard.html">📊 Dashboard</li>
-          <li data-page="rem.html" class="active">📑 REM</li>
-          <li data-page="camas.html">🛏️ Camas</li>
-          <li data-page="indicadores.html">📈 Indicadores</li>
-          <li data-page="configuracion.html">⚙️ Configuración</li>
-          <li class="logout" id="btnLogout">🚪 Salir</li>
-        </ul>
+        <div class="nivel-badge" id="nivelBadge">
+          Nivel: --
+        </div>
       </div>
 
-      <div class="user-box" id="usuario"></div>
-    </aside>
+      <div class="filters">
+        <select id="selectorAnio"></select>
+        <select id="selectorMes"></select>
+        <select id="selectorNivel"></select>
+        <button id="btnExportarPDF">Exportar</button>
+      </div>
 
-    <main class="main" id="contenidoPDF">
+    </header>
 
-      <header class="topbar fade-in">
-        <div>
-          <h1 class="rem-title">REM - Nivel de Cuidado</h1>
-          <span class="status">● Datos reales</span>
-          <div id="nivelCuidado" class="nivel-cuidado"></div>
+    <!-- KPIs -->
+    <section class="kpis">
+
+      <div class="kpi kpi-disponibles">
+        <h4>Días Disponibles</h4>
+        <strong id="camasDisponibles">--</strong>
+      </div>
+
+      <div class="kpi kpi-ocupados">
+        <h4>Días Ocupados</h4>
+        <strong id="camaOcupadas">--</strong>
+      </div>
+
+      <div class="kpi kpi-estada">
+        <h4>Días Estada</h4>
+        <strong id="diasEstada">--</strong>
+      </div>
+
+      <div class="kpi kpi-indice">
+        <h4>Índice Ocupacional</h4>
+        <strong id="indiceOcupacional">--</strong>
+      </div>
+
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="dashboard-layout">
+
+      <!-- IZQUIERDA -->
+      <div class="main-content">
+
+        <!-- CARD PRINCIPAL -->
+        <section class="card-glosa-dinamica">
+          <h3 id="tituloGlosa">Selecciona una glosa</h3>
+          <div id="valorGlosa">--</div>
+          <p id="descGlosa">Aquí verás el detalle del indicador</p>
+        </section>
+
+        <!-- GRÁFICO BARRAS -->
+        <section class="chart-full">
+          <h3>Número de Egresos</h3>
+
+          <div class="chart-container">
+            <canvas id="graficoEgresos"></canvas>
+          </div>
+        </section>
+
+        <!-- DONUT -->
+        <section class="chart-full">
+          <h3>Distribución de Ocupación</h3>
+
+          <div class="chart-donut-container">
+            <canvas id="graficoDonut"></canvas>
+          </div>
+        </section>
+
+        <!-- 🔥 NUEVO GRÁFICO DE LÍNEA -->
+        <section class="chart-full">
+          <h3>Evolución Índice Ocupacional</h3>
+
+          <div class="chart-container">
+            <canvas id="graficoLinea"></canvas>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- DERECHA (GLOSAS) -->
+      <aside class="sidebar-glosas">
+
+        <div class="glosas-header">
+          <h3>Glosas</h3>
+          <select id="selectorGlosa"></select>
         </div>
 
-        <div class="filters">
+        <div id="contenedorGlosas"></div>
 
-          <select id="selectorAnio">
-            <option value="">Todos los años</option>
-          </select>
+      </aside>
 
-          <select id="selectorMes">
-            <option value="">Todos los meses</option>
-            <option value="01">Enero</option>
-            <option value="02">Febrero</option>
-            <option value="03">Marzo</option>
-            <option value="04">Abril</option>
-            <option value="05">Mayo</option>
-            <option value="06">Junio</option>
-            <option value="07">Julio</option>
-            <option value="08">Agosto</option>
-            <option value="09">Septiembre</option>
-            <option value="10">Octubre</option>
-            <option value="11">Noviembre</option>
-            <option value="12">Diciembre</option>
-          </select>
+    </section>
 
-          <select id="selectorNivel"></select>
+  </main>
 
-          <button id="btnExportarPDF" class="btn-pdf" type="button">
-            📄 Exportar PDF
-          </button>
+</div>
 
-        </div>
-      </header>
-
-      <section class="kpis">
-
-        <div class="card kpi fade-in">
-          <span>DÍAS CAMA DISPONIBLES</span>
-          <h2 id="camasDisponibles">--</h2>
-        </div>
-
-        <div class="card kpi fade-in">
-          <span>DÍAS CAMA OCUPADOS</span>
-          <h2 id="camaOcupadas">--</h2>
-        </div>
-
-        <div class="card kpi fade-in">
-          <span>DÍAS DE ESTADA</span>
-          <h2 id="diasEstada">--</h2>
-        </div>
-
-        <div class="card kpi fade-in">
-          <span>ÍNDICE OCUPACIONAL</span>
-          <h2 id="indiceOcupacional">--</h2>
-        </div>
-
-      </section>
-
-      <section class="grid-2">
-
-        <div class="col-left">
-
-          <div class="card fade-in">
-            <h3>📈 Número de egresos</h3>
-            <div class="chart-container">
-              <canvas id="graficoEgresos"></canvas>
-            </div>
-          </div>
-
-          <div class="card fade-in">
-            <h3>📊 Ocupación de camas</h3>
-            <div class="chart-container donut-wrapper">
-              <canvas id="graficoDonut"></canvas>
-              <div class="donut-center" id="donutValor">--%</div>
-            </div>
-          </div>
-
-          <div class="card fade-in">
-            <h3>⚠️ Letalidad mensual</h3>
-            <div class="chart-container">
-              <canvas id="graficoLetalidad"></canvas>
-            </div>
-          </div>
-
-          <div class="card fade-in">
-            <h3>📅 Promedio días de estada</h3>
-            <div class="chart-container">
-              <canvas id="graficoEstada"></canvas>
-            </div>
-          </div>
-
-          <div class="card fade-in">
-            <h3>🛏️ Ocupación vs disponibilidad</h3>
-            <div class="chart-container">
-              <canvas id="graficoCamas"></canvas>
-            </div>
-          </div>
-
-          <div class="card resumen fade-in">
-            <h3>📊 Indicadores</h3>
-            <div id="resumenIndicadores"></div>
-          </div>
-
-        </div>
-
-        <aside class="card glosas fade-in">
-          <h3>📘 Glosas</h3>
-          
-          <div class="filters" style="margin-top: 10px; margin-bottom: 20px;">
-            <select id="selectorGlosa" style="width: 100%; border-radius: 6px; padding: 8px;">
-              <option value="">Todas las Glosas</option>
-            </select>
-          </div>
-
-          <div id="contenedorGlosas"></div>
-        </aside>
-
-      </section>
-
-    </main>
-
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-  <script src="js/rem.js"></script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-
-      /* MENU ACTIVO */
-      const menuItems = document.querySelectorAll("#menu li[data-page]");
-      const currentPage = window.location.pathname.split("/").pop();
-
-      menuItems.forEach(item => {
-        if (item.dataset.page === currentPage) {
-          item.classList.add("active");
-        }
-
-        item.addEventListener("click", () => {
-          window.location.href = item.dataset.page;
-        });
-      });
-
-      /* USUARIO RESPONSIVO Y SEGURO */
-      const user = localStorage.getItem("user");
-      const rol = localStorage.getItem("rol");
-
-      if (user && rol) {
-        document.getElementById("usuario").innerText = `👤 ${user} (${rol})`;
-      } else {
-        const authOld = JSON.parse(localStorage.getItem("auth"));
-        if (authOld) {
-          document.getElementById("usuario").innerText = `👤 ${authOld.username || "Usuario"}`;
-        }
-      }
-
-      /* LOGOUT */
-      document.getElementById("btnLogout")?.addEventListener("click", () => {
-        localStorage.removeItem("auth");
-        localStorage.removeItem("user");
-        localStorage.removeItem("rol");
-        localStorage.removeItem("expires_at");
-        window.location.href = "login.html";
-      });
-
-    });
-  </script>
+<!-- JS -->
+<script src="js/rem.js"></script>
 
 </body>
 </html>

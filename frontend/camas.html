@@ -23,12 +23,12 @@
       <div class="logo">🏥 Hospital SJ</div>
 
       <ul class="menu" id="menu">
-        <li data-page="dashboard.html">📊 Dashboard</li>
-        <li data-page="rem.html">📑 REM</li>
-        <li data-page="camas.html">🛏️ Camas</li>
-        <li data-page="indicadores.html">📈 Indicadores</li>
-        <li data-page="configuracion.html">⚙️ Configuración</li>
-        <li class="logout" onclick="logout()">🚪 Salir</li>
+        <li data-page="dashboard.html">Dashboard</li>
+        <li data-page="rem.html">REM</li>
+        <li data-page="camas.html">Camas</li>
+        <li data-page="indicadores.html">Indicadores</li>
+        <li data-page="configuracion.html">Configuración</li>
+        <li class="logout" onclick="logout()">Salir</li>
       </ul>
     </div>
 
@@ -82,7 +82,7 @@
             <td><span class="nivel alta">Alta</span></td>
             <td id="paciente-101">Juan Pérez</td>
             <td>
-              <button id="btn-gestionar-101" class="btn small secondary" onclick="gestionarCama('101')">
+              <button class="btn small secondary" onclick="gestionarCama('101')">
                 Gestionar
               </button>
             </td>
@@ -95,7 +95,7 @@
             <td><span class="nivel media">Media</span></td>
             <td id="paciente-102">-</td>
             <td>
-              <button id="btn-gestionar-102" class="btn small secondary" style="display:none;" onclick="gestionarCama('102')">
+              <button class="btn small secondary" style="display:none;" onclick="gestionarCama('102')">
                 Gestionar
               </button>
             </td>
@@ -114,7 +114,7 @@
   </main>
 </div>
 
-<!-- MODAL INGRESO -->
+<!-- MODAL -->
 <div id="modalIngreso" class="modal-overlay">
   <div class="modal-content">
 
@@ -124,7 +124,6 @@
     </div>
 
     <div class="modal-body">
-
       <label>Nombre</label>
       <input id="inputNombre" class="form-control">
 
@@ -151,7 +150,6 @@
 
       <label>Cama</label>
       <select id="selectCama" class="form-control"></select>
-
     </div>
 
     <div class="modal-footer">
@@ -167,53 +165,24 @@
 <!-- ========================= -->
 
 <script src="js/auth.js"></script>
+<script src="js/navigation.js"></script> <!-- 🔥 NUEVO GLOBAL -->
+<script src="js/camas.js"></script>
 
 <script>
 initProtectedPage();
 
-/* ========================= */
-/* USUARIO */
-/* ========================= */
+// USUARIO
 const usuario = JSON.parse(localStorage.getItem("auth"));
 if (usuario) {
   document.getElementById("usuario").innerText = `👤 ${usuario.username}`;
 }
 
-/* ========================= */
-/* LOGOUT */
-/* ========================= */
+// LOGOUT
 function logout() {
   localStorage.removeItem("auth");
   window.location.href = "login.html";
 }
-
-/* ========================= */
-/* 🔥 MENU GLOBAL FIX */
-/* ========================= */
-const menuItems = document.querySelectorAll("#menu li[data-page]");
-const currentPage = window.location.pathname.split("/").pop().split("?")[0];
-
-menuItems.forEach(item => {
-
-  const page = item.dataset.page;
-
-  // ACTIVO
-  if (currentPage.includes(page)) {
-    item.classList.add("active");
-  }
-
-  // CLICK
-  item.addEventListener("click", () => {
-
-    // 🔥 cerrar modales SIEMPRE
-    document.querySelectorAll(".modal-overlay").forEach(m => m.remove());
-
-    window.location.href = page;
-  });
-});
 </script>
-
-<script src="js/camas.js"></script>
 
 </body>
 </html>

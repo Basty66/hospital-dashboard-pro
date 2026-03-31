@@ -1,495 +1,351 @@
+// =========================
+// INIT GLOBAL
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+    if (!window.location.pathname.includes("rem.html")) return;
+    init();
+});
+
+// ================= VARIABLES =================
 let dataGlobal = null;
 let charts = {};
-let animaciones = {};
-let intervalDonut = null;
-let rafPointer = null;
 
-// Agregamos glosa y kpis al estado global para los filtros cruzados
+const selectorNivel = document.getElementById("selectorNivel");
+const selectorAnio = document.getElementById("selectorAnio");
+const selectorMes = document.getElementById("selectorMes");
+const selectorGlosa = document.getElementById("selectorGlosa");
+
+const contenedorGlosas = document.getElementById("contenedorGlosas");
+
+const graficoEgresos = document.getElementById("graficoEgresos");
+const graficoDonut = document.getElementById("graficoDonut");
+const graficoLinea = document.getElementById("graficoLinea");
+
 let estado = {
-  nivel: null,
-  anio: "",
-  mes: "",
-  glosa: "",
-  kpis: {}
-};
-
-const SELECTORES_ANIMABLES = {
-  kpis: [".kpi", ".card"],
-  glosas: "#contenedorGlosas .glosa-item",
-  resumen: "#resumenIndicadores .resumen-item",
-  chartCards: [
-    "#graficoEgresos",
-    "#graficoDonut",
-    "#graficoLetalidad",
-    "#graficoEstada",
-    "#graficoCamas"
-  ]
+    nivel: null,
+    anio: "",
+    mes: "",
+    glosa: "",
+    kpis: {}
 };
 
 // ================= INIT =================
-document.addEventListener("DOMContentLoaded", init);
-
 async function init() {
-  mostrarLoader();
-  prepararSuperficies();
-  configurarInteractividadUI();
-
-  try {
     await cargarData();
     configurarFiltros();
-    configurarPDF();
-    requestAnimationFrame(animarEntradaUI);
-  } catch (error) {
-    console.error("ERROR GENERAL:", error);
-    mostrarErrorPantalla(error);
-  } finally {
-    ocultarLoader();
-  }
 }
-
-// ================= ANIMACIÓN =================
-function animarEntradaUI() {
-  document.querySelectorAll(".card, .kpi").forEach((el, i) => {
-    el.style.opacity = "0";
-    el.style.transform = "translateY(20px)";
-    el.classList.remove("is-visible");
-
-    setTimeout(() => {
-      el.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-      el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
-      el.classList.add("is-visible");
-    }, i * 80);
-  });
-}
-
-function animarActualizacionUI() {
-  const elementos = [];
-  document.querySelectorAll(".kpi").forEach(el => elementos.push(el));
-  
-  SELECTORES_ANIMABLES.chartCards.forEach(selector => {
-    const card = document.querySelector(selector)?.closest(".card");
-    if (card) elementos.push(card);
-  });
-  
-  elementos.forEach((el, i) => dispararReveal(el, i * 55));
-  revelarItems("#contenedorGlosas .glosa-item", 85);
-  revelarItems("#resumenIndicadores .resumen-item", 70);
-}
-
-function revelarItems(selector, paso = 80) {
-  document.querySelectorAll(selector).forEach((el, i) => {
-    el.style.setProperty("--stagger-index", i);
-    dispararReveal(el, i * paso);
-  });
-}
-
-function dispararReveal(el, delay = 0) {
-  if (!el) return;
-  el.classList.remove("is-visible");
-  el.style.opacity = "0";
-  el.style.transform = "translateY(16px)";
-  clearTimeout(el._revealTimeout);
-  
-  el._revealTimeout = setTimeout(() => {
-    el.style.transition = "opacity 0.45s ease, transform 0.45s ease";
-    el.style.opacity = "1";
-    el.style.transform = "translateY(0)";
-    el.classList.add("is-visible");
-  }, delay);
-}
-
-// ================= LOADER =================
-function mostrarLoader() { document.getElementById("loader")?.classList.remove("hidden"); }
-function ocultarLoader() { setTimeout(() => document.getElementById("loader")?.classList.add("hidden"), 800); }
 
 // ================= DATA =================
 async function cargarData() {
-  const res = await fetch("./data/rem.json");
-  if (!res.ok) throw new Error("No se pudo cargar rem.json");
+    const res = await fetch("./data/rem.json");
+    dataGlobal = await res.json();
 
-  dataGlobal = await res.json();
-  llenarSelector(dataGlobal.niveles);
-  llenarAnios(dataGlobal.niveles);
-  
-  estado.nivel = dataGlobal.niveles[0];
-  actualizarDashboard();
+    llenarSelector();
+    llenarAnios();
+    llenarMeses();
+    llenarSelectorGlosas();
+
+    estado.nivel = dataGlobal.niveles[0];
+
+    actualizarDashboard();
+}
+
+// ================= SELECTORES =================
+function llenarSelector() {
+    selectorNivel.innerHTML =
+        dataGlobal.niveles.map(n =>
+            `<option value="${n.codigo}">${n.nombre}</option>`
+        ).join("");
+}
+
+function llenarAnios() {
+    const anios = [...new Set(
+        dataGlobal.niveles.flatMap(n =>
+            n.egresos.map(e => e.mes.split("-")[0])
+        )
+    )];
+
+    selectorAnio.innerHTML =
+        `<option value="">Todos</option>` +
+        anios.map(a => `<option>${a}</option>`).join("");
+}
+
+function llenarMeses() {
+    const meses = [...new Set(
+        dataGlobal.niveles.flatMap(n =>
+            n.egresos.map(e => e.mes.split("-")[1])
+        )
+    )].sort();
+
+    const nombresMes = {
+        "01": "Enero","02": "Febrero","03": "Marzo","04": "Abril",
+        "05": "Mayo","06": "Junio","07": "Julio","08": "Agosto",
+        "09": "Septiembre","10": "Octubre","11": "Noviembre","12": "Diciembre"
+    };
+
+    selectorMes.innerHTML =
+        `<option value="">Todos</option>` +
+        meses.map(m => `<option value="${m}">${nombresMes[m]}</option>`).join("");
+}
+
+function llenarSelectorGlosas() {
+    selectorGlosa.innerHTML =
+        `<option value="">Todas las glosas</option>` +
+        dataGlobal.glosas_base.map(g =>
+            `<option value="${g.clave}">${g.titulo}</option>`
+        ).join("");
 }
 
 // ================= FILTROS =================
 function configurarFiltros() {
-  document.getElementById("selectorMes")?.addEventListener("change", (e) => {
-    estado.mes = e.target.value;
-    actualizarDashboard();
-  });
 
-  document.getElementById("selectorAnio")?.addEventListener("change", (e) => {
-    estado.anio = e.target.value;
-    actualizarDashboard();
-  });
+    selectorNivel.onchange = e => {
+        estado.nivel = dataGlobal.niveles.find(n => n.codigo == e.target.value);
+        animarCambio();
+        actualizarDashboard();
+    };
 
-  document.getElementById("selectorNivel")?.addEventListener("change", (e) => {
-    estado.nivel = dataGlobal.niveles.find(n => n.codigo == e.target.value);
-    actualizarDashboard();
-  });
+    selectorAnio.onchange = e => {
+        estado.anio = e.target.value;
+        animarCambio();
+        actualizarDashboard();
+    };
 
-  // Evento para el nuevo filtro de Glosas
-  document.getElementById("selectorGlosa")?.addEventListener("change", (e) => {
-    estado.glosa = e.target.value;
-    // Solo actualizamos las glosas (con animación rápida) sin recargar todo el dashboard
-    actualizarGlosas(dataGlobal.glosas_base, estado.kpis);
-    revelarItems("#contenedorGlosas .glosa-item", 40);
-  });
+    selectorMes.onchange = e => {
+        estado.mes = e.target.value;
+        animarCambio();
+        actualizarDashboard();
+    };
+
+    selectorGlosa.onchange = e => {
+        estado.glosa = e.target.value;
+        actualizarGlosas();
+        actualizarCardGlosa();
+    };
 }
 
-function llenarSelector(niveles) {
-  const selector = document.getElementById("selectorNivel");
-  if (!selector) return;
-  selector.innerHTML = niveles.map(n => `<option value="${n.codigo}">${n.nombre}</option>`).join("");
-}
-
-function llenarAnios(niveles) {
-  const selector = document.getElementById("selectorAnio");
-  if (!selector) return;
-
-  const anios = new Set();
-  niveles.forEach(n => n.egresos.forEach(e => anios.add(e.mes.split("-")[0])));
-
-  selector.innerHTML = `<option value="">Todos los años</option>` + 
-    [...anios].sort((a,b) => b-a).map(a => `<option value="${a}">${a}</option>`).join("");
-}
-
-function filtrarEgresos(egresos) {
-  return egresos.filter(e => {
-    const [anio, mes] = e.mes.split("-");
-    if (estado.anio && anio !== estado.anio) return false;
-    if (estado.mes && mes !== estado.mes) return false;
-    return true;
-  });
-}
-
-// ================= DASHBOARD DINÁMICO =================
+// ================= DASHBOARD =================
 function actualizarDashboard() {
-  const nivel = estado.nivel;
-  if (!nivel || !dataGlobal) return;
 
-  const egresosFiltrados = filtrarEgresos(nivel.egresos);
-  const sum = (arr, key) => arr.reduce((acc, item) => acc + (Number(item[key]) || 0), 0);
-  
-  let kpis = {};
-  
-  const tieneCamas = egresosFiltrados.some(e => e.dias_cama_disponibles !== undefined);
+    if (!estado.nivel) return;
 
-  if (tieneCamas) {
-    const disp = sum(egresosFiltrados, 'dias_cama_disponibles');
-    const ocup = sum(egresosFiltrados, 'dias_cama_ocupados');
-    const estada = sum(egresosFiltrados, 'dias_estada');
-    const altas = sum(egresosFiltrados, 'altas');
-    const traslados = sum(egresosFiltrados, 'traslados');
-    const fallecidos = sum(egresosFiltrados, 'fallecidos');
-    const totalEgresos = altas + traslados + fallecidos;
+    const egresos = filtrarEgresos(estado.nivel.egresos);
 
-    kpis = {
-      dias_cama_disponibles: disp > 0 ? disp : nivel.indicadores.dias_cama_disponibles,
-      dias_cama_ocupados: ocup > 0 ? ocup : nivel.indicadores.dias_cama_ocupados,
-      dias_estada: estada > 0 ? estada : nivel.indicadores.dias_estada,
-      indice_ocupacional: disp > 0 ? ((ocup / disp) * 100) : 0,
-      indice_rotacion: nivel.indicadores.indice_rotacion, 
-      letalidad: totalEgresos > 0 ? ((fallecidos / totalEgresos) * 100) : 0,
-      egresos_total: totalEgresos,
-      promedio_camas: nivel.resumen.promedio_camas, 
-      promedio_estada: totalEgresos > 0 ? (estada / totalEgresos) : 0,
-      traslados: traslados,
-      fallecidos: fallecidos,
-      altas: altas // Agregado para la glosa
+    const sum = (k) => egresos.reduce((a,b)=>a+(b[k]||0),0);
+
+    const disp = sum("dias_cama_disponibles");
+    const ocup = sum("dias_cama_ocupados");
+    const dias = sum("dias_estada");
+    const altas = sum("altas");
+    const fallecidos = sum("fallecidos");
+    const traslados = sum("traslados");
+
+    const totalEgresos = altas + fallecidos;
+
+    estado.kpis = {
+        dias_cama_disponibles: disp,
+        dias_cama_ocupados: ocup,
+        dias_estada: dias,
+
+        indice_ocupacional: disp ? (ocup / disp) * 100 : 0,
+        letalidad: totalEgresos ? (fallecidos / totalEgresos) * 100 : 0,
+
+        altas,
+        fallecidos,
+        traslados,
+        numero_egresos: totalEgresos,
+        promedio_camas: disp ? (disp / 30) : 0,
+        promedio_estada: totalEgresos ? (dias / totalEgresos) : 0,
+        indice_rotacion: disp ? (totalEgresos / (disp / 30)) : 0
     };
-  } else {
-    const altas = sum(egresosFiltrados, 'altas');
-    const traslados = sum(egresosFiltrados, 'traslados');
-    const fallecidos = sum(egresosFiltrados, 'fallecidos');
-    const totalEgresos = altas + traslados + fallecidos;
 
-    kpis = {
-      dias_cama_disponibles: nivel.indicadores.dias_cama_disponibles,
-      dias_cama_ocupados: nivel.indicadores.dias_cama_ocupados,
-      dias_estada: nivel.indicadores.dias_estada,
-      indice_ocupacional: nivel.indicadores.indice_ocupacional,
-      indice_rotacion: nivel.indicadores.indice_rotacion,
-      letalidad: nivel.resumen.letalidad,
-      egresos_total: totalEgresos || nivel.resumen.egresos_total,
-      promedio_camas: nivel.resumen.promedio_camas,
-      promedio_estada: nivel.resumen.promedio_estada,
-      traslados: traslados || nivel.resumen.traslados,
-      fallecidos: fallecidos,
-      altas: altas // Agregado para la glosa
-    };
-  }
+    set("camasDisponibles", disp);
+    set("camaOcupadas", ocup);
+    set("diasEstada", dias);
+    set("indiceOcupacional", estado.kpis.indice_ocupacional, "%");
 
-  // Guardamos los kpis calculados en el estado global
-  estado.kpis = kpis;
+    pintarKPIColor();
 
-  // Actualizamos KPIs Superiores
-  animarNumero("camasDisponibles", kpis.dias_cama_disponibles);
-  animarNumero("camaOcupadas", kpis.dias_cama_ocupados);
-  animarNumero("diasEstada", kpis.dias_estada);
-  animarNumero("indiceOcupacional", kpis.indice_ocupacional, "%");
-
-  actualizarNivelCuidado(nivel.nivel_cuidado);
-  
-  actualizarGraficos(nivel, egresosFiltrados, kpis);
-  actualizarGlosas(dataGlobal.glosas_base, kpis);
-  renderResumen(kpis);
-  
-  prepararSuperficies();
-  configurarInteractividadUI();
-  requestAnimationFrame(animarActualizacionUI);
+    actualizarNivelUI();
+    actualizarGraficos(egresos);
+    actualizarDonut();
+    actualizarGraficoLinea(egresos);
+    actualizarGlosas();
+    actualizarCardGlosa();
 }
 
-// ================= KPI =================
-function animarNumero(id, valor, sufijo = "") {
-  if (animaciones[id]) clearInterval(animaciones[id]);
+// ================= FILTRO =================
+function filtrarEgresos(arr){
+    return arr.filter(e=>{
+        const [anio, mes] = e.mes.split("-");
+        return (!estado.anio || anio === estado.anio) &&
+               (!estado.mes || parseInt(mes) === parseInt(estado.mes));
+    });
+}
 
-  const el = document.getElementById(id);
-  if (!el) return;
+// ================= KPI COLOR =================
+function pintarKPIColor(){
+    const indice = estado.kpis.indice_ocupacional;
+    const el = document.getElementById("indiceOcupacional");
 
-  const numero = Number(valor) || 0;
-  let actual = 0;
-  const step = numero / 30;
+    if (!el) return;
 
-  el.classList.remove("is-visible");
-  el.style.transform = "translateY(8px) scale(0.98)";
-  el.style.opacity = "0.75";
+    if(indice > 90) el.style.color = "#ef4444";
+    else if(indice > 70) el.style.color = "#f59e0b";
+    else el.style.color = "#10b981";
+}
 
-  animaciones[id] = setInterval(() => {
-    actual += step || numero;
-    if (actual >= numero) {
-      actual = numero;
-      clearInterval(animaciones[id]);
-      el.classList.add("is-visible");
-      el.style.transform = "";
-      el.style.opacity = "";
+// ================= GLOSAS =================
+function actualizarGlosas(){
+
+    if(!dataGlobal || !dataGlobal.glosas_base) return;
+
+    let glosas = dataGlobal.glosas_base;
+
+    if(estado.glosa){
+        glosas = glosas.filter(g => g.clave === estado.glosa);
     }
-    el.textContent = formatearValor(actual, sufijo);
-  }, 16);
+
+    contenedorGlosas.innerHTML = glosas.map(g => `
+        <div class="glosa-item fade-in">
+            <h4>${g.titulo}</h4>
+            <strong>${formatearGlosa(g.clave)}</strong>
+            <p>${g.descripcion}</p>
+        </div>
+    `).join("");
 }
 
-function actualizarNivelCuidado(nivel) {
-  const el = document.getElementById("nivelCuidado");
-  if (!el || !nivel) return;
-  el.textContent = nivel.tipo || "Sin nivel";
-  el.className = "nivel-cuidado " + (nivel.color || "primary");
-}
+function formatearGlosa(clave){
+    const val = estado.kpis[clave];
+    if(val === undefined) return "--";
 
-// ================= CHART ENGINE =================
-function crearGrafico(id, tipo, labels, datasets, extra = {}, sufijoY = "") {
-  const ctx = document.getElementById("grafico" + capitalizar(id));
-  if (!ctx) return;
-  if (charts[id]) charts[id].destroy();
-
-  const esDonut = tipo === "doughnut";
-  const esLinea = tipo === "line";
-  const esBarra = tipo === "bar";
-
-  charts[id] = new Chart(ctx, {
-    type: tipo,
-    data: { labels, datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: esDonut ? "nearest" : "index", intersect: false },
-      plugins: {
-        legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 10 } },
-        tooltip: { backgroundColor: "rgba(15, 23, 42, 0.92)", titleColor: "#ffffff", padding: 12 }
-      },
-      animation: { duration: 1000, easing: "easeOutQuart" },
-      elements: {
-        line: { tension: 0.35, borderWidth: 3 },
-        point: { radius: 0, hoverRadius: 6 },
-        bar: { borderRadius: esBarra ? 6 : 0 }
-      },
-      scales: esDonut ? {} : {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, grid: { color: "rgba(148, 163, 184, 0.15)" }, ticks: { callback: v => v + sufijoY } }
-      },
-      ...extra
+    if(clave.includes("indice") || clave.includes("letalidad")){
+        return Math.round(val) + "%";
     }
-  });
+
+    return Math.round(val).toLocaleString("es-CL");
 }
 
-function capitalizar(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+function actualizarCardGlosa(){
+    const titulo = document.getElementById("tituloGlosa");
+    const valor = document.getElementById("valorGlosa");
+    const desc = document.getElementById("descGlosa");
+
+    if (!estado.glosa) {
+        titulo.innerText = "Selecciona una glosa";
+        valor.innerText = "--";
+        desc.innerText = "Aquí verás el detalle del indicador";
+        return;
+    }
+
+    const g = dataGlobal.glosas_base.find(x => x.clave === estado.glosa);
+    if (!g) return;
+
+    titulo.innerText = g.titulo;
+    valor.innerText = formatearGlosa(g.clave);
+    desc.innerText = g.descripcion;
+}
 
 // ================= GRAFICOS =================
-function actualizarGraficos(nivel, egresos, kpis) {
-  const labels = egresos.map(e => formatearMes(e.mes));
+const baseOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 800 }
+};
 
-  crearGrafico("egresos", "bar", labels, [
-    { label: "Altas", data: egresos.map(e => e.altas), backgroundColor: "#10b981" },
-    { label: "Traslados", data: egresos.map(e => e.traslados), backgroundColor: "#3b82f6" },
-    { label: "Fallecidos", data: egresos.map(e => e.fallecidos), backgroundColor: "#ef4444" }
-  ]);
+function actualizarGraficos(egresos){
+    if(charts.bar) charts.bar.destroy();
 
-  actualizarDonut(kpis);
-
-  const dataLetalidad = egresos.map(e => {
-    const total = (e.altas || 0) + (e.traslados || 0) + (e.fallecidos || 0);
-    return total ? Number(((e.fallecidos / total) * 100).toFixed(1)) : 0;
-  });
-  crearGrafico("letalidad", "line", labels, [{
-    label: "Letalidad %", data: dataLetalidad, borderColor: "#ef4444", backgroundColor: "rgba(239, 68, 68, 0.15)", fill: true
-  }], { plugins: { legend: { display: false } } }, "%");
-
-  const promedio = Number(kpis.promedio_estada) || 0;
-  crearGrafico("estada", "line", labels, [{
-    label: "Prom. Estada", data: egresos.map(() => promedio), borderColor: "#8b5cf6", backgroundColor: "rgba(139, 92, 246, 0.15)", fill: true
-  }], { plugins: { legend: { display: false } } }, " d");
-
-  crearGrafico("camas", "bar", ["Disponibles", "Ocupados"], [{
-    label: "Camas",
-    data: [kpis.dias_cama_disponibles, kpis.dias_cama_ocupados],
-    backgroundColor: ["#10b981", "#3b82f6"]
-  }], { plugins: { legend: { display: false } } }); 
-}
-
-function actualizarDonut(kpis) {
-  if (intervalDonut) clearInterval(intervalDonut);
-
-  const ocupados = Number(kpis.dias_cama_ocupados) || 0;
-  const total = Number(kpis.dias_cama_disponibles) || 0;
-  const libres = Math.max(total - ocupados, 0);
-  const porcentaje = total > 0 ? (ocupados / total) * 100 : 0;
-
-  let colorOcupado = "#10b981"; 
-  if (porcentaje >= 90) colorOcupado = "#ef4444"; 
-  else if (porcentaje >= 80) colorOcupado = "#f59e0b";
-
-  animarDonutTexto("donutValor", porcentaje);
-
-  crearGrafico("donut", "doughnut", ["Ocupados", "Libres"], [{
-    data: [ocupados, libres], backgroundColor: [colorOcupado, "#e2e8f0"], borderWidth: 0
-  }], { cutout: "70%", plugins: { legend: { display: false } } });
-}
-
-function animarDonutTexto(id, valor) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  let actual = 0;
-  el.classList.remove("is-visible");
-  intervalDonut = setInterval(() => {
-    actual += (valor / 25) || valor;
-    if (actual >= valor) {
-      actual = valor;
-      clearInterval(intervalDonut);
-      el.classList.add("is-visible");
-    }
-    el.textContent = actual.toFixed(1) + "%";
-  }, 16);
-}
-
-// ================= GLOSAS Y RESUMEN =================
-function actualizarGlosas(glosasBase, kpis) {
-  const contenedor = document.getElementById("contenedorGlosas");
-  if (!contenedor) return;
-
-  const map = {
-    "Altas": kpis.altas,
-    "Días Cama Disponibles": kpis.dias_cama_disponibles,
-    "Días Cama Ocupados": kpis.dias_cama_ocupados,
-    "Días de Estada": kpis.dias_estada,
-    "Índice Ocupacional": formatearValor(kpis.indice_ocupacional, "%"),
-    "Índice de Rotación": kpis.indice_rotacion,
-    "Letalidad": formatearValor(kpis.letalidad, "%"),
-    "Número de Egresos": kpis.egresos_total,
-    "Promedio Cama Disponibles": kpis.promedio_camas,
-    "Promedio Días de Estada": kpis.promedio_estada,
-    "Traslados": kpis.traslados,
-    "Egresos Fallecidos": kpis.fallecidos
-  };
-
-  // Inyectar opciones en el <select> solo la primera vez para no perder la opción elegida
-  const selector = document.getElementById("selectorGlosa");
-  if (selector && selector.options.length <= 1) {
-    const glosasOrdenadas = [...glosasBase].sort((a, b) => a.titulo.localeCompare(b.titulo));
-    selector.innerHTML = `<option value="">Todas las Glosas</option>` + 
-      glosasOrdenadas.map(g => `<option value="${g.titulo}">${g.titulo}</option>`).join("");
-  }
-
-  // Lógica del filtro
-  const glosasFiltradas = estado.glosa 
-    ? glosasBase.filter(g => g.titulo === estado.glosa) 
-    : glosasBase;
-
-  contenedor.innerHTML = glosasFiltradas.map((glosa, index) => `
-    <article class="glosa-item" style="--stagger-index:${index}">
-      <div class="glosa-item__header">
-        <h4>${glosa.titulo}</h4>
-        <span class="glosa-item__valor">${formatearValor(map[glosa.titulo] || "-")}</span>
-      </div>
-      <p>${glosa.descripcion}</p>
-    </article>
-  `).join("");
-}
-
-function renderResumen(kpis) {
-  const contenedor = document.getElementById("resumenIndicadores");
-  if (!contenedor) return;
-
-  const items = [
-    ["Letalidad", `${formatearValor(kpis.letalidad)}%`],
-    ["Egresos totales", kpis.egresos_total],
-    ["Promedio camas", kpis.promedio_camas],
-    ["Promedio estada", `${formatearValor(kpis.promedio_estada)} d`],
-    ["Traslados", kpis.traslados],
-    ["Fallecidos", kpis.fallecidos]
-  ];
-
-  contenedor.innerHTML = items.map(([label, value], i) => `
-    <div class="resumen-item" style="--stagger-index:${i}">
-      <span>${label}</span><strong>${value}</strong>
-    </div>
-  `).join("");
-}
-
-// ================= UI INTERACTIVA & EXPORTACIÓN =================
-function prepararSuperficies() {
-  document.querySelectorAll(".kpi, .chart-card, .glosas").forEach(el => el.classList.add("interactive-surface"));
-}
-
-function configurarInteractividadUI() {
-  document.querySelectorAll(".interactive-surface").forEach(el => {
-    if (el.dataset.interactiveReady === "true") return;
-    el.dataset.interactiveReady = "true";
-
-    el.addEventListener("mousemove", (event) => {
-      if (rafPointer) cancelAnimationFrame(rafPointer);
-      rafPointer = requestAnimationFrame(() => {
-        const rect = el.getBoundingClientRect();
-        const rotateX = (((event.clientY - rect.top) / rect.height) - 0.5) * -5;
-        const rotateY = (((event.clientX - rect.left) / rect.width) - 0.5) * 5;
-        el.style.transform = `perspective(900px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-2px)`;
-      });
+    charts.bar = new Chart(graficoEgresos,{
+        type:"bar",
+        data:{
+            labels: egresos.map(e=>e.mes),
+            datasets:[
+                { label:"Altas", data:egresos.map(e=>e.altas), backgroundColor:"#3b82f6" },
+                { label:"Fallecidos", data:egresos.map(e=>e.fallecidos), backgroundColor:"#ef4444" }
+            ]
+        },
+        options: baseOptions
     });
+}
 
-    el.addEventListener("mouseleave", () => {
-      el.style.removeProperty("transform");
+function actualizarDonut(){
+    if(charts.donut) charts.donut.destroy();
+
+    const disp = estado.kpis.dias_cama_disponibles || 1;
+    const ocup = estado.kpis.dias_cama_ocupados || 0;
+
+    charts.donut = new Chart(graficoDonut,{
+        type:"doughnut",
+        data:{
+            labels:["Ocupado","Libre"],
+            datasets:[{
+                data:[ocup, disp-ocup],
+                backgroundColor:["#3b82f6","#f43f5e"]
+            }]
+        },
+        options: {
+            ...baseOptions,
+            cutout: "65%"
+        }
     });
-  });
 }
 
-function configurarPDF() {
-  document.getElementById("btnExportarPDF")?.addEventListener("click", () => window.print());
+function actualizarGraficoLinea(egresos){
+    if(charts.line) charts.line.destroy();
+
+    charts.line = new Chart(graficoLinea, {
+        type: "line",
+        data: {
+            labels: egresos.map(e => e.mes),
+            datasets: [{
+                label: "Índice Ocupacional %",
+                data: egresos.map(e =>
+                    Math.round((e.dias_cama_ocupados / e.dias_cama_disponibles) * 100)
+                ),
+                borderColor: "#10b981",
+                backgroundColor: "rgba(16,185,129,0.2)",
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: baseOptions
+    });
 }
 
-// ================= HELPERS =================
-function formatearMes(valor) {
-  if (!valor || !valor.includes("-")) return valor;
-  const [anio, mes] = valor.split("-");
-  return new Date(anio, mes - 1, 1).toLocaleDateString("es-CL", { month: "short", year: "numeric" });
+// ================= UI =================
+function actualizarNivelUI() {
+    const badge = document.getElementById("nivelBadge");
+    if (!estado.nivel) return;
+
+    const tipo = estado.nivel.nivel_cuidado?.tipo || "General";
+
+    const iconos = {
+        "General": "🏥",
+        "Básico": "🛏️",
+        "Medio": "⚕️",
+        "Crítico": "🚨"
+    };
+
+    badge.innerText = `${iconos[tipo]} ${estado.nivel.nombre} • ${tipo}`;
 }
 
-function formatearValor(valor, sufijo = "") {
-  if (typeof valor === "string") return valor;
-  const num = Number(valor);
-  if (isNaN(num)) return "-";
-  const tieneDecimales = !Number.isInteger(num);
-  return num.toLocaleString("es-CL", { minimumFractionDigits: tieneDecimales ? 1 : 0, maximumFractionDigits: 1 }) + sufijo;
+function animarCambio(){
+    const main = document.querySelector(".main");
+
+    main.style.transition = "all 0.25s ease";
+    main.style.opacity = 0.5;
+    main.style.transform = "scale(0.98)";
+
+    setTimeout(()=>{
+        main.style.opacity = 1;
+        main.style.transform = "scale(1)";
+    }, 200);
+}
+
+function set(id, valor, sufijo="") {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.innerText = Math.round(valor).toLocaleString("es-CL") + sufijo;
 }
