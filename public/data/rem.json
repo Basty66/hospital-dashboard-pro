@@ -1,0 +1,108 @@
+{
+  "niveles": [
+    {
+      "codigo": "0",
+      "nombre": "Total Establecimiento",
+      "nivel_cuidado": { "tipo": "General", "color": "primary" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 585, "traslados": 30, "fallecidos": 20, "dias_cama_disponibles": 4197, "dias_cama_ocupados": 3221, "dias_estada": 3136 },
+        { "mes": "2024-01", "altas": 579, "traslados": 28, "fallecidos": 16, "dias_cama_disponibles": 4209, "dias_cama_ocupados": 3320, "dias_estada": 3052 },
+        { "mes": "2025-01", "altas": 518, "traslados": 66, "fallecidos": 16, "dias_cama_disponibles": 4247, "dias_cama_ocupados": 3362, "dias_estada": 3488 }
+      ]
+    },
+
+    {
+      "codigo": "330",
+      "nombre": "Área Pensionado",
+      "nivel_cuidado": { "tipo": "Básico", "color": "blue" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 21, "traslados": 0, "fallecidos": 0, "dias_cama_disponibles": 279, "dias_cama_ocupados": 128, "dias_estada": 120 },
+        { "mes": "2024-01", "altas": 18, "traslados": 0, "fallecidos": 1, "dias_cama_disponibles": 248, "dias_cama_ocupados": 110, "dias_estada": 95 },
+        { "mes": "2025-01", "altas": 22, "traslados": 0, "fallecidos": 0, "dias_cama_disponibles": 279, "dias_cama_ocupados": 135, "dias_estada": 118 }
+      ]
+    },
+
+    {
+      "codigo": "404",
+      "nombre": "Área Médico-Quirúrgico",
+      "nivel_cuidado": { "tipo": "Medio", "color": "orange" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 210, "traslados": 15, "fallecidos": 8, "dias_cama_disponibles": 2108, "dias_cama_ocupados": 1890, "dias_estada": 1750 },
+        { "mes": "2024-01", "altas": 215, "traslados": 12, "fallecidos": 7, "dias_cama_disponibles": 2139, "dias_cama_ocupados": 1950, "dias_estada": 1820 },
+        { "mes": "2025-01", "altas": 205, "traslados": 18, "fallecidos": 9, "dias_cama_disponibles": 2170, "dias_cama_ocupados": 2010, "dias_estada": 1940 }
+      ]
+    },
+
+    {
+      "codigo": "405",
+      "nombre": "UCI",
+      "nivel_cuidado": { "tipo": "Crítico", "color": "red" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 10, "traslados": 2, "fallecidos": 2, "dias_cama_disponibles": 155, "dias_cama_ocupados": 95, "dias_estada": 70 },
+        { "mes": "2024-01", "altas": 12, "traslados": 1, "fallecidos": 1, "dias_cama_disponibles": 138, "dias_cama_ocupados": 84, "dias_estada": 59 },
+        { "mes": "2025-01", "altas": 11, "traslados": 2, "fallecidos": 2, "dias_cama_disponibles": 166, "dias_cama_ocupados": 87, "dias_estada": 60 }
+      ]
+    },
+
+    {
+      "codigo": "406",
+      "nombre": "UTI",
+      "nivel_cuidado": { "tipo": "Crítico", "color": "red" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 34, "traslados": 5, "fallecidos": 6, "dias_cama_disponibles": 403, "dias_cama_ocupados": 350, "dias_estada": 286 },
+        { "mes": "2024-01", "altas": 37, "traslados": 4, "fallecidos": 3, "dias_cama_disponibles": 420, "dias_cama_ocupados": 331, "dias_estada": 229 },
+        { "mes": "2025-01", "altas": 47, "traslados": 6, "fallecidos": 2, "dias_cama_disponibles": 392, "dias_cama_ocupados": 376, "dias_estada": 313 }
+      ]
+    },
+
+    {
+      "codigo": "407",
+      "nombre": "Área Pediátrica Básica",
+      "nivel_cuidado": { "tipo": "Básico", "color": "green" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 60, "traslados": 5, "fallecidos": 1, "dias_cama_disponibles": 500, "dias_cama_ocupados": 420, "dias_estada": 380 }
+      ]
+    },
+
+    {
+      "codigo": "412",
+      "nombre": "Área Intermedio Pediátrico",
+      "nivel_cuidado": { "tipo": "Medio", "color": "orange" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 40, "traslados": 4, "fallecidos": 1, "dias_cama_disponibles": 350, "dias_cama_ocupados": 290, "dias_estada": 250 }
+      ]
+    },
+
+    {
+      "codigo": "413",
+      "nombre": "Área Neonatología",
+      "nivel_cuidado": { "tipo": "Crítico", "color": "purple" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 35, "traslados": 4, "fallecidos": 1, "dias_cama_disponibles": 300, "dias_cama_ocupados": 260, "dias_estada": 220 }
+      ]
+    },
+
+    {
+      "codigo": "416",
+      "nombre": "Área Obstetricia",
+      "nivel_cuidado": { "tipo": "Básico", "color": "pink" },
+      "egresos": [
+        { "mes": "2023-01", "altas": 90, "traslados": 3, "fallecidos": 0, "dias_cama_disponibles": 600, "dias_cama_ocupados": 480, "dias_estada": 400 }
+      ]
+    }
+  ],
+
+  "glosas_base": [
+    { "titulo": "Días Cama Disponibles", "clave": "dias_cama_disponibles", "descripcion": "Total de días disponibles." },
+    { "titulo": "Días Cama Ocupados", "clave": "dias_cama_ocupados", "descripcion": "Total de días ocupados." },
+    { "titulo": "Días de Estada", "clave": "dias_estada", "descripcion": "Días de hospitalización." },
+    { "titulo": "Promedio Cama Disponibles", "clave": "promedio_camas", "descripcion": "Promedio de camas disponibles." },
+    { "titulo": "Número de Egresos", "clave": "numero_egresos", "descripcion": "Total de egresos." },
+    { "titulo": "Egresos Fallecidos", "clave": "fallecidos", "descripcion": "Pacientes fallecidos." },
+    { "titulo": "Índice Ocupacional", "clave": "indice_ocupacional", "descripcion": "Porcentaje de ocupación." },
+    { "titulo": "Promedio Días de Estada", "clave": "promedio_estada", "descripcion": "Promedio de días de hospitalización." },
+    { "titulo": "Letalidad", "clave": "letalidad", "descripcion": "Porcentaje de fallecidos." },
+    { "titulo": "Índice de Rotación", "clave": "indice_rotacion", "descripcion": "Rotación de camas." },
+    { "titulo": "Traslados", "clave": "traslados", "descripcion": "Pacientes trasladados." }
+  ]
+}
