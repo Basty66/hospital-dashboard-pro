@@ -33,15 +33,19 @@ export function LoginPage() {
     navigate(destination, { replace: true });
   };
 
-  const handleDemo = (role) => {
-    demoLogin(role);
-    navigate(destination, { replace: true });
+  const handleDashboard = () => {
+    demoLogin("admin");
+    navigate("/dashboard", { replace: true });
   };
 
-  // Función especial para el botón 3D: Inicia sesión y navega directo al visor
   const handleVisor3D = () => {
     demoLogin("admin"); 
     navigate("/visor-3d", { replace: true });
+  };
+
+  const handleCalculadora = () => {
+    demoLogin("admin");
+    navigate("/calculadora", { replace: true });
   };
 
   return (
@@ -70,19 +74,45 @@ export function LoginPage() {
           </form>
           <p id="error" className="error-text">{error}</p>
           
-          <div className="quick-access">
-            <span>Modo prueba:</span>
-            <button type="button" onClick={() => handleDemo("admin")}>Admin</button>
-            <button 
-              type="button" 
-              onClick={handleVisor3D}
-              style={{ backgroundColor: '#0056b3', color: 'white', fontWeight: 'bold' }}
-            >
-              Vista 3D
-            </button>
+          <div style={{ marginTop: '25px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <p style={{ color: '#a0a0a0', fontSize: '13px', marginBottom: '15px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button 
+                type="button" 
+                onClick={handleDashboard}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: '#2a2a35', color: '#fff', border: '1px solid #3f3f4e', cursor: 'pointer', fontWeight: '500' }}
+              >
+                Dashboard
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={handleVisor3D}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: '#0056b3', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                Visor 3D
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={handleCalculadora}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: '#2a2a35', color: '#fff', border: '1px solid #3f3f4e', cursor: 'pointer', fontWeight: '500' }}
+              >
+                Calculadora
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={() => navigate("/")} 
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: 'transparent', color: '#a0a0a0', border: 'none', cursor: 'pointer', fontWeight: '500', marginTop: '5px' }}
+              >
+                Volver al inicio
+              </button>
+            </div>
           </div>
 
-          <button className="btn-back" type="button" onClick={() => navigate("/")}>Volver al inicio</button>
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import { IndicadoresPage } from "./pages/IndicadoresPage";
 import { ConfiguracionPage } from "./pages/ConfiguracionPage";
 import { IndicadoresServiciosClinicosPage } from "./pages/IndicadoresServiciosClinicosPage";
 import { Visor3DPage } from "./pages/Visor3DPage";
+import { CalculadoraPage } from "./pages/CalculadoraPage"; // Importación agregada
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
       <Route path="/rem/oportunidad-hospitalizacion" element={<ProtectedRoute><OportunidadHospitalizacionPage /></ProtectedRoute>} />
       <Route path="/indicadores/servicios" element={<ProtectedRoute><IndicadoresServiciosClinicosPage /></ProtectedRoute>} />
       <Route path="/visor-3d" element={<ProtectedRoute><Visor3DPage /></ProtectedRoute>} />
+      <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} /> {/* Nueva ruta protegida */}
       <Route path="/indicadores-servicios" element={<ProtectedRoute><IndicadoresServiciosClinicosPage /></ProtectedRoute>} />
       <Route path="/camas" element={<ProtectedRoute><CamasPage /></ProtectedRoute>} />
       <Route path="/indicadores" element={<ProtectedRoute><IndicadoresPage /></ProtectedRoute>} />
