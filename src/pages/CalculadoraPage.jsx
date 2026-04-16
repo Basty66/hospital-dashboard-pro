@@ -17,9 +17,10 @@ const INDICADORES = {
       { id: "dias_ocup", label: "Días cama ocupados" },
       { id: "dias_disp", label: "Días cama disponibles" }
     ],
-    formulaTexto: {
+    texto: {
       numerador: "Días cama ocupados",
-      divisor: "Días cama disponibles"
+      divisor: "Días cama disponibles",
+      extra: "× 100"
     },
     formula: (v) => ({
       numerador: v.dias_ocup || 0,
@@ -37,7 +38,7 @@ const INDICADORES = {
       { id: "dias", label: "Total días de estada de egresados" },
       { id: "egresos", label: "Total egresos vivos" }
     ],
-    formulaTexto: {
+    texto: {
       numerador: "Total días de estada",
       divisor: "Total egresos"
     },
@@ -57,7 +58,7 @@ const INDICADORES = {
       { id: "egresos", label: "Egresos + traslados" },
       { id: "camas", label: "Promedio camas disponibles" }
     ],
-    formulaTexto: {
+    texto: {
       numerador: "Egresos + traslados",
       divisor: "Camas disponibles"
     },
@@ -76,7 +77,7 @@ const INDICADORES = {
       { id: "dias_ocup", label: "Días cama ocupados" },
       { id: "egresos", label: "Egresos del período" }
     ],
-    formulaTexto: {
+    texto: {
       numerador: "Disponibles - Ocupados",
       divisor: "Egresos"
     },
@@ -96,7 +97,7 @@ const INDICADORES = {
       { id: "dias_cama", label: "Total días cama disponibles" },
       { id: "dias_mes", label: "Días del mes" }
     ],
-    formulaTexto: {
+    texto: {
       numerador: "Días cama disponibles",
       divisor: "Días del mes"
     },
@@ -116,9 +117,10 @@ const INDICADORES = {
       { id: "fallecidos", label: "Total fallecidos" },
       { id: "egresos", label: "Total egresos" }
     ],
-    formulaTexto: {
+    texto: {
       numerador: "Fallecidos",
-      divisor: "Egresos"
+      divisor: "Egresos",
+      extra: "× 100"
     },
     formula: (v) => ({
       numerador: v.fallecidos || 0,
@@ -201,33 +203,39 @@ export function CalculadoraPage() {
               ))}
             </div>
 
+            {/* FORMULA */}
             <div className="formula-box">
               <h3>{configActual.nombre}</h3>
 
-              {/* 🔥 FORMULA VISUAL */}
-              <div className="formula-content">
-                <div className="formula-line">
-                  <span>{configActual.formulaTexto.numerador}</span>
-                  <strong>{formula.numerador}</strong>
+              <div className="formula-pro">
+                <span className="paren">(</span>
+
+                <div className="fraction">
+                  <span className="top">
+                    {configActual.texto.numerador}
+                  </span>
+                  <span className="bottom">
+                    {configActual.texto.divisor}
+                  </span>
                 </div>
 
-                <div className="formula-divider">÷</div>
+                <span className="paren">)</span>
 
-                <div className="formula-line">
-                  <span>{configActual.formulaTexto.divisor}</span>
-                  <strong>{formula.divisor}</strong>
-                </div>
+                {configActual.texto.extra && (
+                  <span className="extra">
+                    {configActual.texto.extra}
+                  </span>
+                )}
               </div>
 
-              {/* RESULTADO */}
-              <div className="formula-result">
-                <span>Resultado</span>
+              <div className="formula-values">
+                {formula.numerador} / {formula.divisor}
+              </div>
 
+              <div className="formula-result">
                 <div style={{ width: "100%", maxWidth: "300px" }}>
                   <GaugeChart value={valorNumerico} />
                 </div>
-
-                <h2>{resultado}</h2>
               </div>
             </div>
 
