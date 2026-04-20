@@ -122,23 +122,28 @@ canvas {
 
 .calculadora-layout {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 30px;
-  padding: 20px;
+  grid-template-columns: minmax(0, 2fr) minmax(360px, 1fr);
+  gap: 16px;
+  padding: 12px 14px;
+  align-items: stretch;
 }
 
 /* IZQUIERDA */
 .calculadora-left {
   display: flex;
   justify-content: center;
+  align-items: stretch;
+  min-height: 100%;
 }
 
 .card-calculadora {
   background: linear-gradient(135deg, #1e1e24, #0f172a);
-  padding: 30px;
+  padding: 18px 20px 16px;
   border-radius: 18px;
   width: 100%;
-  max-width: 650px;
+  max-width: 620px;
+  height: 100%;
+  min-height: 100%;
   color: white;
 
   box-shadow: 0 10px 35px rgba(0,0,0,0.6);
