@@ -6,6 +6,7 @@ import { fetchHospitalData } from "../lib/data";
 const HISTORY_STORAGE_KEY = "clinical_calculator_history_v1";
 const HISTORY_LIMIT = 24;
 const CURRENT_DATE = new Date();
+const ALL_MONTHS_ID = 0;
 
 const MESES = [
   { id: 1, nombre: "Enero" },
@@ -331,6 +332,35 @@ function getYearMonthParts(period) {
   return { year, month };
 }
 
+function aggregateRemEntries(entries, year) {
+  if (!entries?.length) {
+    return null;
+  }
+
+  return entries.reduce(
+    (acc, entry) => ({
+      mes: `${year}-ALL`,
+      altas: acc.altas + Number(entry.altas || 0),
+      traslados: acc.traslados + Number(entry.traslados || 0),
+      fallecidos: acc.fallecidos + Number(entry.fallecidos || 0),
+      dias_cama_disponibles:
+        acc.dias_cama_disponibles + Number(entry.dias_cama_disponibles || 0),
+      dias_cama_ocupados:
+        acc.dias_cama_ocupados + Number(entry.dias_cama_ocupados || 0),
+      dias_estada: acc.dias_estada + Number(entry.dias_estada || 0)
+    }),
+    {
+      mes: `${year}-ALL`,
+      altas: 0,
+      traslados: 0,
+      fallecidos: 0,
+      dias_cama_disponibles: 0,
+      dias_cama_ocupados: 0,
+      dias_estada: 0
+    }
+  );
+}
+
 function buildPrefillValues(entry, daysInMonth) {
   if (!entry) {
     return {};
@@ -340,13 +370,14 @@ function buildPrefillValues(entry, daysInMonth) {
   const fallecidos = Number(entry.fallecidos || 0);
   const traslados = Number(entry.traslados || 0);
   const egresosTotales = altas + fallecidos;
+  const egresosConTraslados = egresosTotales + traslados;
   const diasDisponibles = Number(entry.dias_cama_disponibles || 0);
   const diasOcupados = Number(entry.dias_cama_ocupados || 0);
 
   return {
     dias_estada: toInputNumber(Number(entry.dias_estada || 0), 2),
-    egresos_vivos: toInputNumber(altas, 2),
-    egresos_traslados: toInputNumber(egresosTotales + traslados, 2),
+    egresos_vivos: toInputNumber(egresosConTraslados, 2),
+    egresos_traslados: toInputNumber(egresosConTraslados, 2),
     promedio_camas: toInputNumber(
       daysInMonth > 0 ? diasDisponibles / daysInMonth : 0,
       2
@@ -354,11 +385,11 @@ function buildPrefillValues(entry, daysInMonth) {
     total_dias_camas_disponibles: toInputNumber(diasDisponibles, 2),
     dias_camas_disponibles: toInputNumber(diasDisponibles, 2),
     dias_camas_ocupadas: toInputNumber(diasOcupados, 2),
-    egresos_periodo: toInputNumber(egresosTotales, 2),
+    egresos_periodo: toInputNumber(egresosConTraslados, 2),
     dias_cama_ocupados: toInputNumber(diasOcupados, 2),
     dias_cama_disponibles: toInputNumber(diasDisponibles, 2),
     fallecidos: toInputNumber(fallecidos, 2),
-    egresos_totales: toInputNumber(egresosTotales, 2)
+    egresos_totales: toInputNumber(egresosConTraslados, 2)
   };
 }
 
@@ -375,7 +406,6 @@ export function CalculadoraPage() {
   const [historialOpen, setHistorialOpen] = useState(false);
 
   const configActual = INDICADORES[indicadorActivo];
-  const diasMes = getDaysInMonth(anoActivo, mesActivo);
   const codigoServicio = SERVICE_CODE_BY_ID[servicioActivo] || "";
 
   const servicioRem = useMemo(() => {
@@ -400,17 +430,55 @@ export function CalculadoraPage() {
       .sort((a, b) => b - a);
   }, [servicioRem]);
 
-  const registroRemSeleccionado = useMemo(() => {
+  const registrosPeriodo = useMemo(() => {
     if (!servicioRem?.egresos?.length) {
+      return [];
+    }
+
+    const filtered = servicioRem.egresos.filter((entry) => {
+      const { year, month } = getYearMonthParts(entry.mes);
+      if (year !== anoActivo) {
+        return false;
+      }
+      if (mesActivo === ALL_MONTHS_ID) {
+        return true;
+      }
+      return month === mesActivo;
+    });
+
+    return filtered.sort((a, b) => String(a.mes).localeCompare(String(b.mes)));
+  }, [servicioRem, anoActivo, mesActivo]);
+
+  const registroRemSeleccionado = useMemo(() => {
+    if (!registrosPeriodo.length) {
       return null;
     }
+
+    if (mesActivo === ALL_MONTHS_ID) {
+      return aggregateRemEntries(registrosPeriodo, anoActivo);
+    }
+
     return (
-      servicioRem.egresos.find((entry) => {
+      registrosPeriodo.find((entry) => {
         const { year, month } = getYearMonthParts(entry.mes);
         return year === anoActivo && month === mesActivo;
       }) || null
     );
-  }, [servicioRem, anoActivo, mesActivo]);
+  }, [registrosPeriodo, anoActivo, mesActivo]);
+
+  const diasMes = useMemo(() => {
+    if (mesActivo !== ALL_MONTHS_ID) {
+      return getDaysInMonth(anoActivo, mesActivo);
+    }
+
+    return registrosPeriodo.reduce((total, entry) => {
+      const { year, month } = getYearMonthParts(entry.mes);
+      if (year <= 0 || month <= 0) {
+        return total;
+      }
+      return total + getDaysInMonth(year, month);
+    }, 0);
+  }, [anoActivo, mesActivo, registrosPeriodo]);
 
   useEffect(() => {
     try {
@@ -464,6 +532,10 @@ export function CalculadoraPage() {
     if (!anosDisponibles.includes(anoActivo)) {
       setAnoActivo(latestYear);
       setMesActivo(latestMonth);
+      return;
+    }
+
+    if (mesActivo === ALL_MONTHS_ID) {
       return;
     }
 
@@ -538,7 +610,10 @@ export function CalculadoraPage() {
       formulaTexto: configActual.formulaTexto,
       calculo: resultado.textoCalculo,
       resultado: resultado.valorFormateado,
-      mes: MESES.find((item) => item.id === mesActivo)?.nombre,
+      mes:
+        mesActivo === ALL_MONTHS_ID
+          ? "Todos los meses"
+          : MESES.find((item) => item.id === mesActivo)?.nombre,
       ano: anoActivo
     };
 
@@ -596,6 +671,7 @@ export function CalculadoraPage() {
                 value={mesActivo}
                 onChange={(event) => setMesActivo(Number(event.target.value))}
               >
+                <option value={ALL_MONTHS_ID}>Todos los meses</option>
                 {MESES.map((mes) => (
                   <option key={mes.id} value={mes.id}>
                     {mes.nombre}
@@ -634,7 +710,7 @@ export function CalculadoraPage() {
                 />
               </div>
               <div className="calc-meta-field">
-                <label>Dias del mes (calendario)</label>
+                <label>Dias del periodo (calendario)</label>
                 <input
                   className="calc-control"
                   type="text"
@@ -653,13 +729,19 @@ export function CalculadoraPage() {
               <div className="alert red">{remError}</div>
             ) : registroRemSeleccionado ? (
               <div className="alert green">
-                Datos REM cargados: {servicioNombre} {registroRemSeleccionado.mes}.
-                Puedes editar cualquier valor y recalcular.
+                Datos REM cargados: {servicioNombre}{" "}
+                {mesActivo === ALL_MONTHS_ID
+                  ? `todos los meses ${anoActivo}`
+                  : registroRemSeleccionado.mes}
+                . Puedes editar cualquier valor y recalcular.
               </div>
             ) : (
               <div className="alert red">
                 No hay datos REM para {servicioNombre} en{" "}
-                {MESES.find((mes) => mes.id === mesActivo)?.nombre} {anoActivo}.
+                {mesActivo === ALL_MONTHS_ID
+                  ? `todos los meses ${anoActivo}`
+                  : `${MESES.find((mes) => mes.id === mesActivo)?.nombre} ${anoActivo}`}
+                .
               </div>
             )}
 
