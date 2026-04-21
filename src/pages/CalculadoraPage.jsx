@@ -7,6 +7,7 @@ const HISTORY_STORAGE_KEY = "clinical_calculator_history_v1";
 const HISTORY_LIMIT = 24;
 const CURRENT_DATE = new Date();
 const ALL_MONTHS_ID = 0;
+const CALCULATOR_SERVICE_CODES = ["416", "405", "406"];
 
 const MESES = [
   { id: 1, nombre: "Enero" },
@@ -23,28 +24,22 @@ const MESES = [
   { id: 12, nombre: "Diciembre" }
 ];
 
-const SERVICIOS = [
-  { id: "obstetricia", nombre: "Obstetricia" },
-  { id: "uci_adultos", nombre: "UCI Adultos" },
-  { id: "uti_adultos", nombre: "UTI Adultos" }
+const CALCULATOR_SERVICE_FALLBACK = [
+  { id: "416", nombre: "Area Obstetricia" },
+  { id: "405", nombre: "UCI" },
+  { id: "406", nombre: "UTI" }
 ];
-
-const SERVICE_CODE_BY_ID = {
-  obstetricia: "416",
-  uci_adultos: "405",
-  uti_adultos: "406"
-};
 
 const INDICADORES = {
   promedio_estada: {
     nombre: "Promedio dias estada",
     formulaTexto:
-      "(Total dias estada de egresados) / (Total egresos vivos)",
+      "(Total dias estada de egresados) / (Total egresos del periodo)",
     unidad: "dias",
     usaGauge: false,
     campos: [
       { id: "dias_estada", label: "Total dias de estada de egresados" },
-      { id: "egresos_vivos", label: "Total egresos vivos" }
+      { id: "egresos_vivos", label: "Total egresos del periodo" }
     ],
     calcular: ({ values }) => {
       const numerador = values.dias_estada ?? 0;
@@ -61,11 +56,11 @@ const INDICADORES = {
   indice_rotacion: {
     nombre: "Indice de rotacion",
     formulaTexto:
-      "(Total egresos + traslados) / (Promedio camas disponibles)",
+      "(Total egresos del periodo) / (Promedio camas disponibles)",
     unidad: "veces",
     usaGauge: false,
     campos: [
-      { id: "egresos_traslados", label: "Total egresos + traslados" },
+      { id: "egresos_traslados", label: "Total egresos del periodo" },
       { id: "promedio_camas", label: "Promedio camas disponibles" }
     ],
     calcular: ({ values }) => {
@@ -310,7 +305,7 @@ function getInterpretation(indicadorId, value) {
   }
 
   if (indicadorId === "promedio_estada") {
-    return "Interpretacion: dias promedio de hospitalizacion por egreso vivo.";
+    return "Interpretacion: dias promedio de hospitalizacion por egreso del periodo.";
   }
 
   if (indicadorId === "promedio_camas_disponibles") {
@@ -396,7 +391,7 @@ function buildPrefillValues(entry, daysInMonth) {
 export function CalculadoraPage() {
   const [remData, setRemData] = useState(null);
   const [remError, setRemError] = useState("");
-  const [servicioActivo, setServicioActivo] = useState(SERVICIOS[0].id);
+  const [servicioActivo, setServicioActivo] = useState(CALCULATOR_SERVICE_CODES[0]);
   const [indicadorActivo, setIndicadorActivo] = useState("promedio_estada");
   const [mesActivo, setMesActivo] = useState(1);
   const [anoActivo, setAnoActivo] = useState(CURRENT_DATE.getFullYear());
@@ -406,7 +401,22 @@ export function CalculadoraPage() {
   const [historialOpen, setHistorialOpen] = useState(false);
 
   const configActual = INDICADORES[indicadorActivo];
-  const codigoServicio = SERVICE_CODE_BY_ID[servicioActivo] || "";
+  const codigoServicio = servicioActivo || "";
+
+  const serviciosDisponibles = useMemo(() => {
+    if (!remData?.niveles?.length) {
+      return CALCULATOR_SERVICE_FALLBACK;
+    }
+
+    const byCode = new Map(remData.niveles.map((nivel) => [String(nivel.codigo), nivel]));
+    return CALCULATOR_SERVICE_CODES.map((code) => {
+      const nivel = byCode.get(code);
+      return {
+        id: code,
+        nombre: nivel?.nombre || CALCULATOR_SERVICE_FALLBACK.find((item) => item.id === code)?.nombre || code
+      };
+    });
+  }, [remData]);
 
   const servicioRem = useMemo(() => {
     if (!remData?.niveles?.length) {
@@ -500,6 +510,12 @@ export function CalculadoraPage() {
   }, [historial]);
 
   useEffect(() => {
+    if (!serviciosDisponibles.some((item) => item.id === servicioActivo)) {
+      setServicioActivo(serviciosDisponibles[0]?.id || CALCULATOR_SERVICE_CODES[0]);
+    }
+  }, [serviciosDisponibles, servicioActivo]);
+
+  useEffect(() => {
     let mounted = true;
 
     fetchHospitalData()
@@ -578,7 +594,7 @@ export function CalculadoraPage() {
   }, [configActual, numericValues, diasMes, camasHospital, anoActivo, mesActivo]);
 
   const servicioNombre =
-    SERVICIOS.find((item) => item.id === servicioActivo)?.nombre || "";
+    serviciosDisponibles.find((item) => item.id === servicioActivo)?.nombre || "";
   const gaugeValue = Math.max(
     0,
     Math.min(
@@ -642,10 +658,41 @@ export function CalculadoraPage() {
             <div className="row">
               <select
                 className="calc-control"
+                value={anoActivo}
+                onChange={(event) => setAnoActivo(Number(event.target.value))}
+              >
+                {anosDisponibles.length === 0 ? (
+                  <option value={anoActivo}>{anoActivo}</option>
+                ) : (
+                  anosDisponibles.map((ano) => (
+                    <option key={ano} value={ano}>
+                      {ano}
+                    </option>
+                  ))
+                )}
+              </select>
+
+              <select
+                className="calc-control"
+                value={mesActivo}
+                onChange={(event) => setMesActivo(Number(event.target.value))}
+              >
+                <option value={ALL_MONTHS_ID}>Todos los meses</option>
+                {MESES.map((mes) => (
+                  <option key={mes.id} value={mes.id}>
+                    {mes.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="row">
+              <select
+                className="calc-control"
                 value={servicioActivo}
                 onChange={(event) => setServicioActivo(event.target.value)}
               >
-                {SERVICIOS.map((servicio) => (
+                {serviciosDisponibles.map((servicio) => (
                   <option key={servicio.id} value={servicio.id}>
                     {servicio.nombre}
                   </option>
@@ -662,36 +709,6 @@ export function CalculadoraPage() {
                     {INDICADORES[key].nombre}
                   </option>
                 ))}
-              </select>
-            </div>
-
-            <div className="row">
-              <select
-                className="calc-control"
-                value={mesActivo}
-                onChange={(event) => setMesActivo(Number(event.target.value))}
-              >
-                <option value={ALL_MONTHS_ID}>Todos los meses</option>
-                {MESES.map((mes) => (
-                  <option key={mes.id} value={mes.id}>
-                    {mes.nombre}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="calc-control"
-                value={anoActivo}
-                onChange={(event) => setAnoActivo(Number(event.target.value))}
-              >
-                {anosDisponibles.length === 0 ? (
-                  <option value={anoActivo}>{anoActivo}</option>
-                ) : (
-                  anosDisponibles.map((ano) => (
-                    <option key={ano} value={ano}>
-                      {ano}
-                    </option>
-                  ))
-                )}
               </select>
             </div>
 

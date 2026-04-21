@@ -3,6 +3,18 @@ import { AppShell } from "../components/AppShell";
 import { ChartCanvas } from "../components/ChartCanvas";
 import { fetchHospitalData, sum } from "../lib/data";
 
+function getDaysInMonth(year, month) {
+  return new Date(Number(year), Number(month), 0).getDate();
+}
+
+function getDaysFromPeriod(items) {
+  return items.reduce((total, item) => {
+    const [year, month] = String(item.mes || "").split("-");
+    if (!year || !month) return total;
+    return total + getDaysInMonth(year, month);
+  }, 0);
+}
+
 export function DashboardPage() {
   const [hospital, setHospital] = useState(null);
 
@@ -20,9 +32,14 @@ export function DashboardPage() {
 
   if (!view) return <AppShell title="Dashboard Hospitalario">Cargando...</AppShell>;
 
-  const totalEgresos = sum(view.egresos, "altas") + sum(view.egresos, "fallecidos");
+  const totalEgresos =
+    sum(view.egresos, "altas") +
+    sum(view.egresos, "fallecidos") +
+    sum(view.egresos, "traslados");
+  const diasPeriodo = getDaysFromPeriod(view.egresos);
+  const promedioCamas = diasPeriodo ? sum(view.egresos, "dias_cama_disponibles") / diasPeriodo : 0;
   const promedioEstada = totalEgresos ? sum(view.egresos, "dias_estada") / totalEgresos : 0;
-  const indiceRotacion = sum(view.egresos, "dias_cama_disponibles") ? totalEgresos / (sum(view.egresos, "dias_cama_disponibles") / 30) : 0;
+  const indiceRotacion = promedioCamas ? totalEgresos / promedioCamas : 0;
   const letalidad = totalEgresos ? (sum(view.egresos, "fallecidos") / totalEgresos) * 100 : 0;
   const critical = view.services.filter((service) => ((sum(service.egresos, "dias_cama_ocupados") / sum(service.egresos, "dias_cama_disponibles")) * 100) > 90);
 

@@ -3,6 +3,18 @@ import { AppShell } from "../components/AppShell";
 import { ChartCanvas } from "../components/ChartCanvas";
 import { fetchHospitalData, MONTH_OPTIONS, monthLabel, sum } from "../lib/data";
 
+function getDaysInMonth(year, month) {
+  return new Date(Number(year), Number(month), 0).getDate();
+}
+
+function getDaysFromPeriod(items) {
+  return items.reduce((total, item) => {
+    const [year, month] = String(item.mes || "").split("-");
+    if (!year || !month) return total;
+    return total + getDaysInMonth(year, month);
+  }, 0);
+}
+
 export function RemPage() {
   const [data, setData] = useState(null);
   const [nivelCodigo, setNivelCodigo] = useState("");
@@ -14,7 +26,12 @@ export function RemPage() {
     fetchHospitalData().then((json) => {
       setData(json);
       setNivelCodigo(json.niveles[0].codigo);
-      setAnio("2025");
+      const latestYear = Math.max(
+        ...json.niveles.flatMap((item) =>
+          item.egresos.map((egreso) => Number(egreso.mes.split("-")[0]))
+        )
+      );
+      setAnio(String(latestYear));
     });
   }, []);
 
@@ -34,21 +51,23 @@ export function RemPage() {
     const disponibles = sum(source, "dias_cama_disponibles");
     const ocupados = sum(source, "dias_cama_ocupados");
     const diasEstada = sum(source, "dias_estada");
+    const diasPeriodo = getDaysFromPeriod(source);
     const altas = sum(source, "altas");
     const fallecidos = sum(source, "fallecidos");
     const traslados = sum(source, "traslados");
     const numeroEgresos = altas + fallecidos + traslados;
+    const promedioCamas = diasPeriodo ? disponibles / diasPeriodo : 0;
     return {
       dias_cama_disponibles: disponibles,
       dias_cama_ocupados: ocupados,
       dias_estada: diasEstada,
       indice_ocupacional: disponibles ? (ocupados / disponibles) * 100 : 0,
-      promedio_camas: disponibles / 30,
+      promedio_camas: promedioCamas,
       numero_egresos: numeroEgresos,
       fallecidos,
       letalidad: numeroEgresos ? (fallecidos / numeroEgresos) * 100 : 0,
       promedio_estada: numeroEgresos ? diasEstada / numeroEgresos : 0,
-      indice_rotacion: disponibles ? numeroEgresos / (disponibles / 30) : 0,
+      indice_rotacion: promedioCamas ? numeroEgresos / promedioCamas : 0,
       traslados,
       altas,
     };

@@ -29,6 +29,18 @@ let estado = {
     kpis: {}
 };
 
+function getDaysInMonth(year, month) {
+    return new Date(Number(year), Number(month), 0).getDate();
+}
+
+function getDaysFromEgresos(egresos) {
+    return egresos.reduce((total, item) => {
+        const [year, month] = String(item.mes || "").split("-");
+        if (!year || !month) return total;
+        return total + getDaysInMonth(year, month);
+    }, 0);
+}
+
 // ================= INIT =================
 async function init() {
     await cargarData();
@@ -140,7 +152,9 @@ function actualizarDashboard() {
     const fallecidos = sum("fallecidos");
     const traslados = sum("traslados");
 
-    const totalEgresos = altas + fallecidos;
+    const totalEgresos = altas + fallecidos + traslados;
+    const diasPeriodo = getDaysFromEgresos(egresos);
+    const promedioCamas = diasPeriodo ? (disp / diasPeriodo) : 0;
 
     estado.kpis = {
         dias_cama_disponibles: disp,
@@ -154,9 +168,9 @@ function actualizarDashboard() {
         fallecidos,
         traslados,
         numero_egresos: totalEgresos,
-        promedio_camas: disp ? (disp / 30) : 0,
+        promedio_camas: promedioCamas,
         promedio_estada: totalEgresos ? (dias / totalEgresos) : 0,
-        indice_rotacion: disp ? (totalEgresos / (disp / 30)) : 0
+        indice_rotacion: promedioCamas ? (totalEgresos / promedioCamas) : 0
     };
 
     set("camasDisponibles", disp);
