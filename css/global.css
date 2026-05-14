@@ -489,18 +489,15 @@ body {
 }
 
 .hub-cards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 18px;
-  flex-wrap: wrap;
-  justify-content: center;
   max-width: 820px;
   width: 100%;
 }
 
 .hub-card {
-  flex: 1 1 180px;
-  max-width: 240px;
-  min-width: 180px;
+  min-width: 0;
   padding: 28px 18px 24px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.04);
@@ -620,6 +617,7 @@ body {
 
 @media (max-width: 860px) {
   .hub-cards {
+    grid-template-columns: repeat(2, 1fr);
     gap: 14px;
     max-width: 100%;
   }
@@ -636,6 +634,7 @@ body {
   }
 
   .hub-cards {
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
