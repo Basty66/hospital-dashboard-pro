@@ -489,14 +489,18 @@ body {
 }
 
 .hub-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
+  display: flex;
   gap: 18px;
-  max-width: 620px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 820px;
   width: 100%;
 }
 
 .hub-card {
+  flex: 1 1 180px;
+  max-width: 240px;
+  min-width: 180px;
   padding: 28px 18px 24px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.04);
@@ -616,8 +620,7 @@ body {
 
 @media (max-width: 860px) {
   .hub-cards {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 14px;
     max-width: 100%;
   }
 }
@@ -633,9 +636,7 @@ body {
   }
 
   .hub-cards {
-    grid-template-columns: 1fr;
-    gap: 9px;
-    max-width: 360px;
+    gap: 12px;
   }
 
   .hub-footer-links {
@@ -650,7 +651,7 @@ body {
 
 @media (max-width: 400px) {
   .hub-cards {
-    gap: 6px;
+    gap: 8px;
   }
 }
 
