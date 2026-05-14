@@ -1,0 +1,136 @@
+{% extends "rest_framework/base.html" %}
+
+{% block bootstrap_theme %}
+<style>
+  :root {
+    --primary: #0f172a;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --card-bg: #1e293b;
+    --card-border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--primary);
+    color: var(--text);
+    margin: 0;
+    min-height: 100vh;
+  }
+  .navbar { background: #1e293b !important; border: none !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .navbar .navbar-brand { color: #f1f5f9 !important; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+  .navbar .navbar-brand .version { color: var(--accent); font-weight: 500; }
+  .navbar .nav > li > a { color: #94a3b8 !important; }
+  .navbar .nav > li > a:hover { color: #f1f5f9 !important; background: rgba(255,255,255,0.05) !important; }
+  .navbar-inverse .navbar-toggle { border-color: #475569; }
+  .navbar-inverse .navbar-toggle:hover { background: rgba(255,255,255,0.08); }
+  .navbar-inverse .navbar-collapse { border-color: #334155; }
+  .breadcrumb { background: #1e293b; border-radius: 12px; padding: 10px 16px; margin: 16px 0; }
+  .breadcrumb a { color: var(--accent); }
+  .breadcrumb > .active { color: var(--text-muted); }
+  .page-header { border-bottom: 1px solid #334155; }
+  .page-header h1 { color: #f1f5f9; font-size: 24px; font-weight: 700; }
+  .well {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    color: var(--text);
+  }
+  .well code { 
+    background: #0f172a; 
+    color: #93c5fd; 
+    border: 1px solid #334155; 
+    border-radius: 6px; 
+    padding: 2px 6px;
+    font-size: 13px;
+  }
+  .list-group-item {
+    background: #1e293b;
+    border-color: #334155;
+    color: var(--text);
+    border-radius: 10px !important;
+    margin-bottom: 4px;
+    transition: background 0.2s;
+  }
+  .list-group-item:hover { background: #263548; }
+  .list-group-item .badge { background: var(--accent); color: white; font-weight: 600; border-radius: 20px; }
+  .list-group-item a { color: var(--accent); font-weight: 500; }
+  a { color: var(--accent); }
+  a:hover { color: var(--accent-hover); }
+  .btn { border-radius: 10px; font-weight: 600; font-size: 13px; padding: 8px 18px; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); transform: translateY(-1px); }
+  .btn-info { background: #0891b2; border-color: #0891b2; }
+  .btn-danger { background: var(--danger); border-color: var(--danger); }
+  .btn-warning { background: var(--warning); border-color: var(--warning); color: #0f172a; }
+  .form-control {
+    background: #0f172a;
+    border: 1px solid #475569;
+    border-radius: 10px;
+    color: var(--text);
+    padding: 8px 12px;
+  }
+  .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+  select.form-control { color: var(--text); }
+  select.form-control option { background: #0f172a; color: var(--text); }
+  .request-info { background: #0f172a; border-radius: 10px; padding: 12px 16px; }
+  .response-info { background: #0f172a; border-radius: 10px; padding: 12px 16px; }
+  pre { background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #e2e8f0; }
+  .strut-string { color: #22c55e; }
+  .strut-number { color: #f59e0b; }
+  .strut-null { color: #ef4444; }
+  .nav-tabs { border-bottom: 1px solid #334155; }
+  .nav-tabs > li > a { color: #94a3b8; border: none; border-radius: 10px 10px 0 0; }
+  .nav-tabs > li > a:hover { background: rgba(255,255,255,0.05); color: #f1f5f9; border-color: transparent; }
+  .nav-tabs > li.active > a { background: #1e293b; color: #f1f5f9; border-color: #334155; border-bottom-color: #1e293b; }
+  .tab-pane { background: transparent; }
+  .modal-content { background: #1e293b; border: 1px solid #475569; border-radius: 16px; }
+  .modal-header { border-bottom: 1px solid #334155; }
+  .modal-footer { border-top: 1px solid #334155; }
+  .close { color: #94a3b8; text-shadow: none; }
+  .close:hover { color: #f1f5f9; }
+  .select2-dropdown { background: #1e293b; border-color: #475569; }
+  .select2-results__option { color: var(--text); }
+  .select2-container--default .select2-selection--single { background: #0f172a; border-color: #475569; border-radius: 10px; height: 38px; }
+  .select2-container--default .select2-selection--single .select2-selection__rendered { color: var(--text); line-height: 38px; }
+  .select2-container--default .select2-selection--single .select2-selection__arrow { height: 36px; }
+  .select2-container--default .select2-results__option--highlighted[aria-selected] { background: var(--accent); }
+  .tab-pane label { color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .select2-container--default .select2-selection--multiple .select2-selection__choice { background: #334155; border-color: #475569; color: var(--text); }
+  .select2-container--default .select2-selection--multiple .select2-selection__choice__remove { color: #94a3b8; }
+  .select2-container--default .select2-search--inline .select2-search__field { color: var(--text); }
+  .filter-form .btn { margin-right: 4px; }
+  .button-form { margin: 2px 0; }
+  .button-form .btn { margin: 0 2px 2px 0; }
+  .str { color: #22c55e; }
+  .pln { color: var(--text); }
+  .pun { color: #94a3b8; }
+  .atv { color: #22c55e; }
+  .atn { color: #93c5fd; }
+  .tag { color: #fca5a5; }
+  .dec { color: #f59e0b; }
+  @media (max-width: 768px) {
+    .navbar-brand { font-size: 14px !important; }
+    .well { padding: 12px; }
+  }
+</style>
+{% endblock %}
+
+{% block branding %}
+<a class="navbar-brand" href="/api/">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;vertical-align:-4px">
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+  </svg>
+  Hospital San José <span class="version">API</span>
+</a>
+{% endblock %}
+
+{% block userlinks %}
+{{ block.super }}
+{% endblock %}
