@@ -14,7 +14,7 @@ import { ConfiguracionPage } from "./pages/ConfiguracionPage";
 import { IndicadoresServiciosClinicosPage } from "./pages/IndicadoresServiciosClinicosPage";
 import { Visor3DPage } from "./pages/Visor3DPage";
 import { CalculadoraPage } from "./pages/CalculadoraPage";
-import { HubPage, ApiRedirect } from "./pages/HubPage";
+import { HubPage } from "./pages/HubPage";
 
 export default function App() {
   const [splashDone, setSplashDone] = useState(() => sessionStorage.getItem("splash") === "1");
@@ -40,7 +40,6 @@ export default function App() {
         <Route path="/indicadores/servicios" element={<ProtectedRoute><IndicadoresServiciosClinicosPage /></ProtectedRoute>} />
         <Route path="/visor-3d" element={<ProtectedRoute><Visor3DPage /></ProtectedRoute>} />
         <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
-        <Route path="/api" element={<ApiRedirect />} />
         <Route path="/indicadores-servicios" element={<ProtectedRoute><IndicadoresServiciosClinicosPage /></ProtectedRoute>} />
         <Route path="/camas" element={<ProtectedRoute><CamasPage /></ProtectedRoute>} />
         <Route path="/indicadores" element={<ProtectedRoute><IndicadoresPage /></ProtectedRoute>} />

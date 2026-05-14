@@ -2,13 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearSession } from "../lib/auth";
 
-const API_BASE = "https://api-hospital-melipilla.onrender.com";
-
-export function ApiRedirect() {
-  useEffect(() => { window.location.replace(`${API_BASE}/api/`); }, []);
-  return null;
-}
-
 const cards = [
   {
     label: "Dashboard",
@@ -50,7 +43,7 @@ const cards = [
   {
     label: "Admin API",
     desc: "Panel de administración de la base de datos",
-    path: "https://api-hospital-melipilla.onrender.com/api/",
+    path: "/api/",
     color: "#f59e0b",
     glow: "rgba(245,158,11,0.3)",
     action: "external",
