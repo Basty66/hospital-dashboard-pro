@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: hsjmelipilla
+    env: python
+    buildCommand: pip install -r api/requirements.txt && npm install && npm run build && cd api && python manage.py collectstatic --noinput
+    startCommand: cd api && gunicorn hospital_api.wsgi --bind 0.0.0.0:$PORT
